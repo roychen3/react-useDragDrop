@@ -30,7 +30,7 @@ export const useDragDrop = ({ data }) => {
   const targetRef = useRef(null);
   const draggingRef = useRef(null);
 
-  const getScrollParent = (node) => {
+  const getClosestScrollParent = (node) => {
     if (node == null) {
       return null;
     }
@@ -38,12 +38,12 @@ export const useDragDrop = ({ data }) => {
     if (node.scrollHeight > node.clientHeight) {
       return node;
     } else {
-      return getScrollParent(node.parentNode);
+      return getClosestScrollParent(node.parentNode);
     }
   };
 
   const getScrollerSpeed = () => {
-    const targetParentElement = getScrollParent(targetRef.current);
+    const targetParentElement = getClosestScrollParent(targetRef.current);
     if (!targetParentElement) return 0;
 
     const targetParentElementRect = targetParentElement.getBoundingClientRect();
@@ -58,32 +58,31 @@ export const useDragDrop = ({ data }) => {
   };
 
   const swapItem = (event) => {
-    draggingRef.current.style.zIndex = "-10";
-    let target;
+    draggingRef.current.style.zIndex = '-10';
+    let targetFromPoint = null;
     if (event.clientX) {
       // mouse
-      target = document.elementFromPoint(event.clientX, event.clientY);
+      targetFromPoint = document.elementFromPoint(event.clientX, event.clientY);
     } else {
       // touch
-      target = document.elementFromPoint(
+      targetFromPoint = document.elementFromPoint(
         event.changedTouches[0].clientX,
         event.changedTouches[0].clientY
       );
     }
-    draggingRef.current.style.zIndex = "";
+    draggingRef.current.style.zIndex = '';
 
-    const itemIdx = +draggingRef.current.getAttribute("drag-drop-index");
-    const draggingTagName = draggingRef.current.tagName.toLowerCase();
-    const targetNode = target.closest(`${draggingTagName}[drag-drop-index]`);
-    if (targetNode) {
-      const toIdx = parseInt(targetNode.getAttribute("drag-drop-index"), 10);
+    if (targetFromPoint) {
+      const itemIdx = parseInt(draggingRef.current.getAttribute('drag-drop-index'), 10);
+      const draggingTagName = draggingRef.current.tagName.toLowerCase();
+      const targetNode = targetFromPoint.closest(`${draggingTagName}[drag-drop-index]`);
+      if (targetNode) {
+        const toIdx = parseInt(targetNode.getAttribute('drag-drop-index'), 10);
 
-      if (typeof toIdx === "number" && itemIdx !== toIdx) {
-        draggingRef.current.setAttribute("drag-drop-index", toIdx);
-        targetNode.style.opacity = "25%";
-        targetRef.current.style.opacity = "";
-        targetRef.current = targetNode;
-        setDragDropData((preValues) => moveItem(preValues, itemIdx, toIdx));
+        if (typeof toIdx === 'number' && itemIdx !== toIdx) {
+          draggingRef.current.setAttribute('drag-drop-index', toIdx);
+          setDragDropData((preValues) => moveItem(preValues, itemIdx, toIdx));
+        }
       }
     }
   };
@@ -92,30 +91,25 @@ export const useDragDrop = ({ data }) => {
     if (draggingRef.current) {
       if (event.clientX) {
         // mouse
-        draggingRef.current.style.transform = `translateX(${
-          event.clientX - startMousePositionRef.current.x
-        }px)`;
-        draggingRef.current.style.top = `${
-          event.clientY - draggingRef.current.clientHeight / 2
-        }px`;
+        draggingRef.current.style.transform = `translateX(${event.clientX - startMousePositionRef.current.x
+          }px)`;
+        draggingRef.current.style.top = `${event.clientY - draggingRef.current.clientHeight / 2
+          }px`;
       } else {
         // touch
-        draggingRef.current.style.transform = `translateX(${
-          event.changedTouches[0].clientX - startMousePositionRef.current.x
-        }px)`;
-        draggingRef.current.style.top = `${
-          event.changedTouches[0].clientY - draggingRef.current.clientHeight / 2
-        }px`;
+        draggingRef.current.style.transform = `translateX(${event.changedTouches[0].clientX - startMousePositionRef.current.x
+          }px)`;
+        draggingRef.current.style.top = `${event.changedTouches[0].clientY - draggingRef.current.clientHeight / 2
+          }px`;
       }
       swapItem(event);
-
       setScrollerSpeed(getScrollerSpeed());
     }
   };
 
   const drop = () => {
     if (draggingRef.current) {
-      targetRef.current.style.opacity = "";
+      targetRef.current.style.opacity = '';
       targetRef.current = null;
 
       const draggingTagName = draggingRef.current.tagName.toLowerCase();
@@ -123,44 +117,43 @@ export const useDragDrop = ({ data }) => {
         .querySelector(`${draggingTagName}[drop-pre-container="true"]`)
         .remove();
       draggingRef.current = null;
+      startMousePositionRef.current = { x: 0, y: 0 };
+      setScrollerSpeed(0);
     }
   };
 
   const drag = (event) => {
-    const targetNode = event.target.closest("[drag-drop-index]");
+    event.preventDefault();
+    const targetNode = event.target.closest('[drag-drop-index]');
 
     const draggingNode = targetNode.cloneNode(true);
-    draggingNode.addEventListener("mousemove", move);
-    draggingNode.addEventListener("touchmove", move, { passive: false });
-    draggingNode.addEventListener("mouseup", drop);
-    draggingNode.addEventListener("touchend", drop, { passive: false });
-    draggingNode.setAttribute("drop-pre-container", true);
-    if (targetNode.tagName.toLowerCase() === "tr") {
-      draggingNode.querySelectorAll("td").forEach((tdNode, index) => {
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, { passive: false });
+    draggingNode.addEventListener('mouseup', drop);
+    draggingNode.addEventListener('touchend', drop, { passive: false });
+    draggingNode.setAttribute('drop-pre-container', true);
+    if (targetNode.tagName.toLowerCase() === 'tr') {
+      draggingNode.querySelectorAll('td').forEach((tdNode, index) => {
         tdNode.style.minWidth = `${targetNode.childNodes[index].offsetWidth}px`;
       });
     }
     draggingNode.style.width = `${targetNode.offsetWidth}px`;
-    draggingNode.style.position = "fixed";
-    draggingNode.style.touchAction = "none";
+    draggingNode.style.position = 'fixed';
+    draggingNode.style.touchAction = 'none';
     const targetRect = targetNode.getBoundingClientRect();
     if (event.clientX) {
       // mouse
-      draggingNode.style.left = `${
-        event.clientX - (event.clientX - targetRect.left)
-      }px`;
-      draggingNode.style.top = `${
-        event.clientY - targetNode.clientHeight / 2
-      }px`;
+      draggingNode.style.left = `${event.clientX - (event.clientX - targetRect.left)
+        }px`;
+      draggingNode.style.top = `${event.clientY - targetNode.clientHeight / 2
+        }px`;
     } else {
       // touch
-      draggingNode.style.left = `${
-        event.changedTouches[0].clientX -
+      draggingNode.style.left = `${event.changedTouches[0].clientX -
         (event.changedTouches[0].clientX - targetRect.left)
-      }px`;
-      draggingNode.style.top = `${
-        event.changedTouches[0].clientY - targetNode.clientHeight / 2
-      }px`;
+        }px`;
+      draggingNode.style.top = `${event.changedTouches[0].clientY - targetNode.clientHeight / 2
+        }px`;
     }
     document.body.appendChild(draggingNode);
     draggingRef.current = draggingNode;
@@ -178,7 +171,7 @@ export const useDragDrop = ({ data }) => {
       };
     }
 
-    targetNode.style.opacity = "25%";
+    targetNode.style.opacity = '25%';
     targetRef.current = targetNode;
   };
 
@@ -192,9 +185,9 @@ export const useDragDrop = ({ data }) => {
 
   useEffect(() => {
     let scroller;
-    if (scrollerSpeed !== 0) {
+    const targetParentElement = getClosestScrollParent(targetRef.current);
+    if (scrollerSpeed !== 0 && targetParentElement) {
       scroller = setInterval(() => {
-        const targetParentElement = getScrollParent(targetRef.current);
         targetParentElement.scrollTop += scrollerSpeed;
       }, 0);
     }
@@ -205,7 +198,6 @@ export const useDragDrop = ({ data }) => {
   return {
     drag,
     drop,
-    move,
     dragDropData,
   };
 };
