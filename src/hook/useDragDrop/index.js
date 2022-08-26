@@ -1,26 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 
-const moveItem = (arr, itemIdx, toIdx) => {
-  if (Array.isArray(arr) === false) return arr;
-  if (Number.isInteger(itemIdx) === false) return arr;
-  if (Number.isInteger(toIdx) === false) return arr;
-
-  const startIdx = 0;
-  const endIdx = arr.length - 1;
-  const data = [...arr];
-  const moveItem = data.splice(itemIdx, 1)[0];
-
-  if (itemIdx === 0 && itemIdx > toIdx) {
-    data.splice(endIdx, 0, moveItem);
-    return data;
-  } else if (itemIdx === endIdx && itemIdx < toIdx) {
-    data.splice(startIdx, 0, moveItem);
-    return data;
-  } else {
-    data.splice(toIdx, 0, moveItem);
-    return data;
-  }
-};
+import { moveItem, getClosestScrollParent, disabledDrag } from './utils'
 
 export const useDragDrop = ({ data }) => {
   const [dragDropData, setDragDropData] = useState(data);
@@ -29,18 +9,6 @@ export const useDragDrop = ({ data }) => {
   const startMousePositionRef = useRef({ x: 0, y: 0 });
   const targetRef = useRef(null);
   const draggingRef = useRef(null);
-
-  const getClosestScrollParent = (node) => {
-    if (node == null) {
-      return null;
-    }
-
-    if (node.scrollHeight > node.clientHeight) {
-      return node;
-    } else {
-      return getClosestScrollParent(node.parentNode);
-    }
-  };
 
   const getScrollerSpeed = () => {
     const targetParentElement = getClosestScrollParent(targetRef.current);
@@ -89,6 +57,7 @@ export const useDragDrop = ({ data }) => {
 
   const move = (event) => {
     if (draggingRef.current) {
+      event.preventDefault();
       if (event.clientX) {
         // mouse
         draggingRef.current.style.transform = `translateX(${event.clientX - startMousePositionRef.current.x
@@ -109,9 +78,14 @@ export const useDragDrop = ({ data }) => {
 
   const drop = () => {
     if (draggingRef.current) {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('touchmove', move, { passive: true });
+
       targetRef.current.style.opacity = '';
       targetRef.current = null;
 
+      draggingRef.current.removeEventListener('mouseup', drop);
+      draggingRef.current.removeEventListener('touchend', drop, { passive: false });
       const draggingTagName = draggingRef.current.tagName.toLowerCase();
       document.body
         .querySelector(`${draggingTagName}[drop-pre-container="true"]`)
@@ -123,7 +97,9 @@ export const useDragDrop = ({ data }) => {
   };
 
   const drag = (event) => {
-    event.preventDefault();
+    if (event.clientX) {
+      event.preventDefault();
+    }
     const targetNode = event.target.closest('[drag-drop-index]');
 
     const draggingNode = targetNode.cloneNode(true);
@@ -194,6 +170,22 @@ export const useDragDrop = ({ data }) => {
 
     return () => clearInterval(scroller);
   }, [scrollerSpeed]);
+
+  useEffect(() => {
+    const draggableNodes = document.querySelectorAll('[drag-drop-draggable="false"]')
+    draggableNodes.forEach((draggableNode) => {
+      draggableNode.addEventListener('mousedown', disabledDrag);
+      draggableNode.addEventListener('touchstart', disabledDrag);
+    })
+
+    return () => {
+      draggableNodes.forEach((draggableNode) => {
+        draggableNode.removeEventListener('mousedown', disabledDrag);
+        draggableNode.removeEventListener('touchstart', disabledDrag);
+      })
+    }
+  }, [])
+
 
   return {
     drag,

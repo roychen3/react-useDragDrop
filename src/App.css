@@ -34,8 +34,13 @@ ul {
 }
 
 li {
-  padding: 9px;
   border: #000 solid 1px;
   background-color: #000;
   color: white;
+  display: flex;
+  gap: 1rem;
+}
+
+li > span {
+  padding: 9px;
 }

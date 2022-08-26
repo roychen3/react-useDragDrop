@@ -1,13 +1,20 @@
 # Getting Started with Create React App
 
-### node v16.14.2
-
 ### `npm install`
 
 ### `npm start`
 
 <br>
 <br>
+<br>
+
+### DEMO
+https://roychen3.github.io/react-useDragDrop/
+
+<br>
+
+### node v16.14.2
+
 <br>
 
 # Usage
@@ -32,16 +39,22 @@ const List = () => {
           onMouseDown={drag}
           onTouchStart={drag}
         >
-          <span>{item.id}</span>
-          <span>{item.userId}</span>
-          <span>{item.title}</span>
+          <div
+            style={{
+              display: 'inline-flex',
+              gap: '1rem',
+            }}
+            drag-drop-draggable="false"
+          >
+            <span>{item.id}</span>
+            <span>{item.userId}</span>
+            <span>{item.title}</span>
+          </div>
         </li>
       ))}
     </ul>
   );
 };
-
-List.propTypes = {};
 
 export default List;
 ```
@@ -92,8 +105,5 @@ const Table = () => {
   );
 };
 
-Table.propTypes = {};
-
 export default Table;
-
 ```

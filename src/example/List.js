@@ -17,9 +17,9 @@ const List = () => {
           onMouseDown={drag}
           onTouchStart={drag}
         >
-          <span>{item.id}</span>
-          <span>{item.userId}</span>
-          <span>{item.title}</span>
+            <span>{item.id}</span>
+            <span>{item.userId}</span>
+            <span drag-drop-draggable="false">{item.title}</span>
         </li>
       ))}
     </ul>
