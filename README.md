@@ -1,13 +1,3 @@
-# Getting Started with Create React App
-
-### `npm install`
-
-### `npm start`
-
-<br>
-<br>
-<br>
-
 ### DEMO
 https://roychen3.github.io/react-useDragDrop/
 
@@ -107,3 +97,15 @@ const Table = () => {
 
 export default Table;
 ```
+
+<br />
+<br />
+<br />
+
+# Getting Started with Create React App
+
+### `npm install`
+
+### `npm start`
+
+### Remove gh-page branch before deploy
