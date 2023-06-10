@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
-import { useDragDrop } from "../hook/useDragDrop";
-import data from "./data.json";
+import { useDragDrop } from '../hook/useDragDrop';
+import data from './data.json';
 
 const List = () => {
-  const { drag, drop, dragDropData } = useDragDrop({ data });
+  const { drag, dragDropData } = useDragDrop({ data });
 
   return (
     <ul>
@@ -12,8 +12,6 @@ const List = () => {
         <li
           key={item.id}
           drag-drop-index={index}
-          onMouseUp={drop}
-          onTouchEnd={drop}
           onMouseDown={drag}
           onTouchStart={drag}
         >

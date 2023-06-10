@@ -105,6 +105,10 @@ export const useDragDrop = ({ data }) => {
       startMousePositionRef.current = { x: 0, y: 0 };
       setScrollerSpeed(0);
     }
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('touchmove', move, { passive: false });
+    document.removeEventListener('mouseup', drop);
+    document.removeEventListener('touchend', drop, { passive: false });
   };
 
   const drag = (event) => {
@@ -114,10 +118,10 @@ export const useDragDrop = ({ data }) => {
     const targetNode = event.target.closest('[drag-drop-index]');
 
     const draggingNode = targetNode.cloneNode(true);
-    window.addEventListener('mousemove', move);
-    window.addEventListener('touchmove', move, { passive: false });
-    draggingNode.addEventListener('mouseup', drop);
-    draggingNode.addEventListener('touchend', drop, { passive: false });
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('mouseup', drop);
+    document.addEventListener('touchend', drop, { passive: false });
     draggingNode.setAttribute('drop-pre-container', true);
     if (targetNode.tagName.toLowerCase() === 'tr') {
       draggingNode.querySelectorAll('td').forEach((tdNode, index) => {
@@ -204,7 +208,6 @@ export const useDragDrop = ({ data }) => {
 
   return {
     drag,
-    drop,
     dragDropData,
   };
 };
