@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from 'react';
 
 import { moveItem, getClosestScrollParent, disabledDrag } from './utils'
 
@@ -41,9 +41,14 @@ export const useDragDrop = ({ data }) => {
     draggingRef.current.style.zIndex = '';
 
     if (targetFromPoint) {
-      const itemIdx = parseInt(draggingRef.current.getAttribute('drag-drop-index'), 10);
+      const itemIdx = parseInt(
+        draggingRef.current.getAttribute('drag-drop-index'),
+        10
+      );
       const draggingTagName = draggingRef.current.tagName.toLowerCase();
-      const targetNode = targetFromPoint.closest(`${draggingTagName}[drag-drop-index]`);
+      const targetNode = targetFromPoint.closest(
+        `${draggingTagName}[drag-drop-index]`
+      );
       if (targetNode) {
         const toIdx = parseInt(targetNode.getAttribute('drag-drop-index'), 10);
 
@@ -56,27 +61,33 @@ export const useDragDrop = ({ data }) => {
   };
 
   const move = (event) => {
+    event.preventDefault();
     if (draggingRef.current) {
       event.preventDefault();
       if (event.clientX) {
         // mouse
-        draggingRef.current.style.transform = `translateX(${event.clientX - startMousePositionRef.current.x
-          }px)`;
-        draggingRef.current.style.top = `${event.clientY - draggingRef.current.clientHeight / 2
-          }px`;
+        draggingRef.current.style.transform = `translateX(${
+          event.clientX - startMousePositionRef.current.x
+        }px)`;
+        draggingRef.current.style.top = `${
+          event.clientY - draggingRef.current.clientHeight / 2
+        }px`;
       } else {
         // touch
-        draggingRef.current.style.transform = `translateX(${event.changedTouches[0].clientX - startMousePositionRef.current.x
-          }px)`;
-        draggingRef.current.style.top = `${event.changedTouches[0].clientY - draggingRef.current.clientHeight / 2
-          }px`;
+        draggingRef.current.style.transform = `translateX(${
+          event.changedTouches[0].clientX - startMousePositionRef.current.x
+        }px)`;
+        draggingRef.current.style.top = `${
+          event.changedTouches[0].clientY - draggingRef.current.clientHeight / 2
+        }px`;
       }
       swapItem(event);
       setScrollerSpeed(getScrollerSpeed());
     }
   };
 
-  const drop = () => {
+  const drop = (event) => {
+    event.preventDefault();
     if (draggingRef.current) {
       window.removeEventListener('mousemove', move);
       window.removeEventListener('touchmove', move, { passive: true });
@@ -119,17 +130,21 @@ export const useDragDrop = ({ data }) => {
     const targetRect = targetNode.getBoundingClientRect();
     if (event.clientX) {
       // mouse
-      draggingNode.style.left = `${event.clientX - (event.clientX - targetRect.left)
-        }px`;
-      draggingNode.style.top = `${event.clientY - targetNode.clientHeight / 2
-        }px`;
+      draggingNode.style.left = `${
+        event.clientX - (event.clientX - targetRect.left)
+      }px`;
+      draggingNode.style.top = `${
+        event.clientY - targetNode.clientHeight / 2
+      }px`;
     } else {
       // touch
-      draggingNode.style.left = `${event.changedTouches[0].clientX -
+      draggingNode.style.left = `${
+        event.changedTouches[0].clientX -
         (event.changedTouches[0].clientX - targetRect.left)
-        }px`;
-      draggingNode.style.top = `${event.changedTouches[0].clientY - targetNode.clientHeight / 2
-        }px`;
+      }px`;
+      draggingNode.style.top = `${
+        event.changedTouches[0].clientY - targetNode.clientHeight / 2
+      }px`;
     }
     document.body.appendChild(draggingNode);
     draggingRef.current = draggingNode;
