@@ -21,7 +21,7 @@ const Table = () => {
           {dragDropData.map((item, index) => (
             <tr
               key={item.id}
-              drag-drop-index={index}
+              data-drag-drop-index={index}
             >
               <td>{item.id}</td>
               <td>{item.userId}</td>

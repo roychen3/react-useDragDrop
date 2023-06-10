@@ -2,6 +2,9 @@ import { useRef, useState, useEffect } from 'react';
 
 import { moveItem, getClosestScrollParent, disabledDrag } from './utils';
 
+const TARGET_INDEX_ATTRIBUTE = 'data-drag-drop-index';
+const TARGET_DRAGGABLE_ATTRIBUTE = 'data-drag-drop-draggable';
+
 export const useDragDrop = ({ data }) => {
   const [dragDropData, setDragDropData] = useState(data);
   const [scrollerSpeed, setScrollerSpeed] = useState(0);
@@ -42,18 +45,21 @@ export const useDragDrop = ({ data }) => {
 
     if (targetFromPoint) {
       const itemIdx = parseInt(
-        draggingRef.current.getAttribute('drag-drop-index'),
+        draggingRef.current.getAttribute(TARGET_INDEX_ATTRIBUTE),
         10
       );
       const draggingTagName = draggingRef.current.tagName.toLowerCase();
       const targetNode = targetFromPoint.closest(
-        `${draggingTagName}[drag-drop-index]`
+        `${draggingTagName}[${TARGET_INDEX_ATTRIBUTE}]`
       );
       if (targetNode) {
-        const toIdx = parseInt(targetNode.getAttribute('drag-drop-index'), 10);
+        const toIdx = parseInt(
+          targetNode.getAttribute(TARGET_INDEX_ATTRIBUTE),
+          10
+        );
 
         if (typeof toIdx === 'number' && itemIdx !== toIdx) {
-          draggingRef.current.setAttribute('drag-drop-index', toIdx);
+          draggingRef.current.setAttribute(TARGET_INDEX_ATTRIBUTE, toIdx);
           setDragDropData((preValues) => moveItem(preValues, itemIdx, toIdx));
         }
       }
@@ -109,10 +115,14 @@ export const useDragDrop = ({ data }) => {
   };
 
   const drag = (event) => {
+    if (event.target.getAttribute(TARGET_DRAGGABLE_ATTRIBUTE) === 'false') {
+      return;
+    }
+
     if (event.clientX) {
       event.preventDefault();
     }
-    const targetNode = event.target.closest('[drag-drop-index]');
+    const targetNode = event.target.closest(`[${TARGET_INDEX_ATTRIBUTE}]`);
 
     const draggingNode = targetNode.cloneNode(true);
     document.addEventListener('mousemove', move);
@@ -186,23 +196,6 @@ export const useDragDrop = ({ data }) => {
 
     return () => clearInterval(scroller);
   }, [scrollerSpeed]);
-
-  useEffect(() => {
-    const draggableNodes = document.querySelectorAll(
-      '[drag-drop-draggable="false"]'
-    );
-    draggableNodes.forEach((draggableNode) => {
-      draggableNode.addEventListener('mousedown', disabledDrag);
-      draggableNode.addEventListener('touchstart', disabledDrag);
-    });
-
-    return () => {
-      draggableNodes.forEach((draggableNode) => {
-        draggableNode.removeEventListener('mousedown', disabledDrag);
-        draggableNode.removeEventListener('touchstart', disabledDrag);
-      });
-    };
-  }, []);
 
   return {
     drag,

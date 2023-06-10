@@ -11,13 +11,13 @@ const List = () => {
       {dragDropData.map((item, index) => (
         <li
           key={item.id}
-          drag-drop-index={index}
+          data-drag-drop-index={index}
           onMouseDown={drag}
           onTouchStart={drag}
         >
             <span>{item.id}</span>
             <span>{item.userId}</span>
-            <span drag-drop-draggable="false">{item.title}</span>
+            <span data-drag-drop-draggable="false">{item.title}</span>
         </li>
       ))}
     </ul>
