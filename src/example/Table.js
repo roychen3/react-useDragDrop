@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
-import { useDragDrop } from "../hook/useDragDrop";
-import data from "./data.json";
+import { useDragDrop } from '../hook/useDragDrop';
+import data from './data.json';
 
 const Table = () => {
-  const { drag, drop, dragDropData } = useDragDrop({ data });
+  const { drag, dragDropData } = useDragDrop({ data });
 
   return (
     <div className="tableContainer">
@@ -21,9 +21,7 @@ const Table = () => {
           {dragDropData.map((item, index) => (
             <tr
               key={item.id}
-              drag-drop-index={index}
-              onMouseUp={drop}
-              onTouchEnd={drop}
+              data-drag-drop-index={index}
             >
               <td>{item.id}</td>
               <td>{item.userId}</td>

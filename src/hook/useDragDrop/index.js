@@ -1,6 +1,9 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from 'react';
 
-import { moveItem, getClosestScrollParent, disabledDrag } from './utils'
+import { moveItem, getClosestScrollParent, disabledDrag } from './utils';
+
+const TARGET_INDEX_ATTRIBUTE = 'data-drag-drop-index';
+const TARGET_DRAGGABLE_ATTRIBUTE = 'data-drag-drop-draggable';
 
 export const useDragDrop = ({ data }) => {
   const [dragDropData, setDragDropData] = useState(data);
@@ -41,14 +44,22 @@ export const useDragDrop = ({ data }) => {
     draggingRef.current.style.zIndex = '';
 
     if (targetFromPoint) {
-      const itemIdx = parseInt(draggingRef.current.getAttribute('drag-drop-index'), 10);
+      const itemIdx = parseInt(
+        draggingRef.current.getAttribute(TARGET_INDEX_ATTRIBUTE),
+        10
+      );
       const draggingTagName = draggingRef.current.tagName.toLowerCase();
-      const targetNode = targetFromPoint.closest(`${draggingTagName}[drag-drop-index]`);
+      const targetNode = targetFromPoint.closest(
+        `${draggingTagName}[${TARGET_INDEX_ATTRIBUTE}]`
+      );
       if (targetNode) {
-        const toIdx = parseInt(targetNode.getAttribute('drag-drop-index'), 10);
+        const toIdx = parseInt(
+          targetNode.getAttribute(TARGET_INDEX_ATTRIBUTE),
+          10
+        );
 
         if (typeof toIdx === 'number' && itemIdx !== toIdx) {
-          draggingRef.current.setAttribute('drag-drop-index', toIdx);
+          draggingRef.current.setAttribute(TARGET_INDEX_ATTRIBUTE, toIdx);
           setDragDropData((preValues) => moveItem(preValues, itemIdx, toIdx));
         }
       }
@@ -57,35 +68,38 @@ export const useDragDrop = ({ data }) => {
 
   const move = (event) => {
     if (draggingRef.current) {
-      event.preventDefault();
+      if (event.cancelable) {
+        event.preventDefault();
+      }
       if (event.clientX) {
         // mouse
-        draggingRef.current.style.transform = `translateX(${event.clientX - startMousePositionRef.current.x
-          }px)`;
-        draggingRef.current.style.top = `${event.clientY - draggingRef.current.clientHeight / 2
-          }px`;
+        draggingRef.current.style.transform = `translateX(${
+          event.clientX - startMousePositionRef.current.x
+        }px)`;
+        draggingRef.current.style.top = `${
+          event.clientY - draggingRef.current.clientHeight / 2
+        }px`;
       } else {
         // touch
-        draggingRef.current.style.transform = `translateX(${event.changedTouches[0].clientX - startMousePositionRef.current.x
-          }px)`;
-        draggingRef.current.style.top = `${event.changedTouches[0].clientY - draggingRef.current.clientHeight / 2
-          }px`;
+        draggingRef.current.style.transform = `translateX(${
+          event.changedTouches[0].clientX - startMousePositionRef.current.x
+        }px)`;
+        draggingRef.current.style.top = `${
+          event.changedTouches[0].clientY - draggingRef.current.clientHeight / 2
+        }px`;
       }
       swapItem(event);
       setScrollerSpeed(getScrollerSpeed());
     }
   };
 
-  const drop = () => {
+  const drop = (event) => {
     if (draggingRef.current) {
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('touchmove', move, { passive: true });
-
+      if (event.cancelable) {
+        event.preventDefault();
+      }
       targetRef.current.style.opacity = '';
       targetRef.current = null;
-
-      draggingRef.current.removeEventListener('mouseup', drop);
-      draggingRef.current.removeEventListener('touchend', drop, { passive: false });
       const draggingTagName = draggingRef.current.tagName.toLowerCase();
       document.body
         .querySelector(`${draggingTagName}[drop-pre-container="true"]`)
@@ -93,20 +107,28 @@ export const useDragDrop = ({ data }) => {
       draggingRef.current = null;
       startMousePositionRef.current = { x: 0, y: 0 };
       setScrollerSpeed(0);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('touchmove', move, { passive: true });
+      document.removeEventListener('mouseup', drop);
+      document.removeEventListener('touchend', drop, { passive: true });
     }
   };
 
   const drag = (event) => {
+    if (event.target.getAttribute(TARGET_DRAGGABLE_ATTRIBUTE) === 'false') {
+      return;
+    }
+
     if (event.clientX) {
       event.preventDefault();
     }
-    const targetNode = event.target.closest('[drag-drop-index]');
+    const targetNode = event.target.closest(`[${TARGET_INDEX_ATTRIBUTE}]`);
 
     const draggingNode = targetNode.cloneNode(true);
-    window.addEventListener('mousemove', move);
-    window.addEventListener('touchmove', move, { passive: false });
-    draggingNode.addEventListener('mouseup', drop);
-    draggingNode.addEventListener('touchend', drop, { passive: false });
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('mouseup', drop);
+    document.addEventListener('touchend', drop, { passive: false });
     draggingNode.setAttribute('drop-pre-container', true);
     if (targetNode.tagName.toLowerCase() === 'tr') {
       draggingNode.querySelectorAll('td').forEach((tdNode, index) => {
@@ -119,17 +141,21 @@ export const useDragDrop = ({ data }) => {
     const targetRect = targetNode.getBoundingClientRect();
     if (event.clientX) {
       // mouse
-      draggingNode.style.left = `${event.clientX - (event.clientX - targetRect.left)
-        }px`;
-      draggingNode.style.top = `${event.clientY - targetNode.clientHeight / 2
-        }px`;
+      draggingNode.style.left = `${
+        event.clientX - (event.clientX - targetRect.left)
+      }px`;
+      draggingNode.style.top = `${
+        event.clientY - targetNode.clientHeight / 2
+      }px`;
     } else {
       // touch
-      draggingNode.style.left = `${event.changedTouches[0].clientX -
+      draggingNode.style.left = `${
+        event.changedTouches[0].clientX -
         (event.changedTouches[0].clientX - targetRect.left)
-        }px`;
-      draggingNode.style.top = `${event.changedTouches[0].clientY - targetNode.clientHeight / 2
-        }px`;
+      }px`;
+      draggingNode.style.top = `${
+        event.changedTouches[0].clientY - targetNode.clientHeight / 2
+      }px`;
     }
     document.body.appendChild(draggingNode);
     draggingRef.current = draggingNode;
@@ -171,25 +197,8 @@ export const useDragDrop = ({ data }) => {
     return () => clearInterval(scroller);
   }, [scrollerSpeed]);
 
-  useEffect(() => {
-    const draggableNodes = document.querySelectorAll('[drag-drop-draggable="false"]')
-    draggableNodes.forEach((draggableNode) => {
-      draggableNode.addEventListener('mousedown', disabledDrag);
-      draggableNode.addEventListener('touchstart', disabledDrag);
-    })
-
-    return () => {
-      draggableNodes.forEach((draggableNode) => {
-        draggableNode.removeEventListener('mousedown', disabledDrag);
-        draggableNode.removeEventListener('touchstart', disabledDrag);
-      })
-    }
-  }, [])
-
-
   return {
     drag,
-    drop,
     dragDropData,
   };
 };
