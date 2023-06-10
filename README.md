@@ -1,64 +1,55 @@
-### DEMO
-https://roychen3.github.io/react-useDragDrop/
+# react-useDragDrop
 
-<br>
+Simple drag and drop hook
 
-### node v16.14.2
+[DEMO](https://roychen3.github.io/react-useDragDrop/)
 
-<br>
+## Getting Started
 
-# Usage
+```bash
+npm run start
+```
+
+## Installation
+
+node v16.14.2
+
+## Usage
+
+### Row event
 
 ```jsx
-import React from "react";
-
 import { useDragDrop } from "../hook/useDragDrop";
-import data from "./data.json";
 
 const List = () => {
-  const { drag, drop, dragDropData } = useDragDrop({ data });
+  const { drag, dragDropData } = useDragDrop({ data });
 
   return (
     <ul>
       {dragDropData.map((item, index) => (
         <li
           key={item.id}
-          drag-drop-index={index}
-          onMouseUp={drop}
-          onTouchEnd={drop}
+          data-drag-drop-index={index}
           onMouseDown={drag}
           onTouchStart={drag}
         >
-          <div
-            style={{
-              display: 'inline-flex',
-              gap: '1rem',
-            }}
-            drag-drop-draggable="false"
-          >
             <span>{item.id}</span>
             <span>{item.userId}</span>
-            <span>{item.title}</span>
-          </div>
+            <span data-drag-drop-draggable="false">{item.title}</span>
         </li>
       ))}
     </ul>
   );
 };
-
-export default List;
 ```
 
-or
+### Button of Row event
 
 ```jsx
-import React from "react";
-
 import { useDragDrop } from "../hook/useDragDrop";
-import data from "./data.json";
 
 const Table = () => {
-  const { drag, drop, dragDropData } = useDragDrop({ data });
+  const { drag, dragDropData } = useDragDrop({ data });
 
   return (
     <div className="tableContainer">
@@ -75,9 +66,7 @@ const Table = () => {
           {dragDropData.map((item, index) => (
             <tr
               key={item.id}
-              drag-drop-index={index}
-              onMouseUp={drop}
-              onTouchEnd={drop}
+              data-drag-drop-index={index}
             >
               <td>{item.id}</td>
               <td>{item.userId}</td>
@@ -94,18 +83,8 @@ const Table = () => {
     </div>
   );
 };
-
-export default Table;
 ```
 
-<br />
-<br />
-<br />
+## License
 
-# Getting Started with Create React App
-
-### `npm install`
-
-### `npm start`
-
-### Remove gh-page branch before deploy
+[LICENSE](LICENSE)
