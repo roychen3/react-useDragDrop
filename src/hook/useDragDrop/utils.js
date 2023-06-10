@@ -31,7 +31,3 @@ export const getClosestScrollParent = (node) => {
     return getClosestScrollParent(node.parentNode);
   }
 };
-
-export const disabledDrag = (event) => {
-  event.stopPropagation();
-};

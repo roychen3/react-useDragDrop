@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 
-import { moveItem, getClosestScrollParent, disabledDrag } from './utils';
+import { moveItem, getClosestScrollParent } from './utils';
 
 const TARGET_INDEX_ATTRIBUTE = 'data-drag-drop-index';
 const TARGET_DRAGGABLE_ATTRIBUTE = 'data-drag-drop-draggable';
